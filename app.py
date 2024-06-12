@@ -1,45 +1,51 @@
 import streamlit as st
-import openai
-from PIL import Image
-import requests
-from io import BytesIO
+# 현재 페이지 상태를 저장할 세션 상태 초기화
+if 'page' not in st.session_state:
+    st.session_state.page = 'main'
 
-# Streamlit 애플리케이션 구성
-st.title("AI Image Colorizer")
-st.write("Upload a black-and-white PNG or JPG image and get a colorized version using OpenAI API.")
+# 페이지 전환 함수
+def switch_page(page_name):
+    st.session_state.page = page_name
 
-# OpenAI API 키 입력
-api_key = st.text_input("Enter your OpenAI API key:", type="password")
-
-# 파일 업로드
-uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
-
-if uploaded_file and api_key:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+# 메인 페이지 함수
+def main_page():
+    # CSS 적용
+    st.markdown(main_page_style, unsafe_allow_html=True)
     
-    # 이미지 색칠하는 함수
-    def colorize_image(image):
-        # 이미지 바이너리를 OpenAI API로 전송
-        buffered = BytesIO()
-        image.save(buffered, format="PNG")
-        img_str = buffered.getvalue()
-        
-        response = openai.Image.create(
-            prompt="colorize this image",
-            image=img_str,
-            n=1,
-            size="512x512"
-        )
-        image_url = response['data'][0]['url']
-        
-        # URL에서 이미지를 로드하여 반환
-        response = requests.get(image_url)
-        img = Image.open(BytesIO(response.content))
-        return img
+    # 메인 페이지 내용
+    st.title('Streamlit App with Styled Main Page')
+    st.write('이 예제는 메인 페이지의 배경 이미지와 컨텐츠 스타일을 지정하는 방법을 보여줍니다.')
     
-    # 색칠된 이미지 출력
-    if st.button("Colorize Image"):
-        openai.api_key = api_key
-        colorized_image = colorize_image(image)
-        st.image(colorized_image, caption="Colorized Image", use_column_width=True)
+    # 다음 페이지로 이동하는 버튼
+    if st.button('두 번째 페이지로 이동'):
+        switch_page('second_page')
+
+# 두 번째 페이지 함수
+def second_page():
+    st.title('Second Page')
+    st.write('이것은 두 번째 페이지입니다.')
+    
+    # 이전 페이지로 돌아가는 버튼
+    if st.button('이전 페이지로 돌아가기'):
+        switch_page('main')
+    
+    # 다음 페이지로 이동하는 버튼
+    if st.button('세 번째 페이지로 이동'):
+        switch_page('third_page')
+
+# 세 번째 페이지 함수
+def third_page():
+    st.title('Third Page')
+    st.write('이것은 세 번째 페이지입니다.')
+    
+    # 두 번째 페이지로 돌아가는 버튼
+    if st.button('두 번째 페이지로 돌아가기'):
+        switch_page('second_page')
+
+# 현재 페이지에 따라 해당 페이지 함수 호출
+if st.session_state.page == 'main':
+    main_page()
+elif st.session_state.page == 'second_page':
+    second_page()
+elif st.session_state.page == 'third_page':
+    third_page()
